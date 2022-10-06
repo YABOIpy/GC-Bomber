@@ -139,7 +139,14 @@ func member(token string, user_id string, gc_id string, method string) {
 	}
 	resp, err := Client.Do(req)
 	if resp.StatusCode == 204 {
-		fmt.Println("(\033[32m+\033[39m) Added [USER]: "+user_id+" To [GC]: ", gc_id)
+		if method == "PUT" {
+			x :="Added  "
+			fmt.Println("(\033[32m+\033[39m) "+x+" [USER]: "+user_id+" To [GC]: ", gc_id)
+		} else if method == "DELETE" {
+			x := "Removed"
+			fmt.Println("(\033[32m-\033[39m) "+x+" [USER]: "+user_id+" To [GC]: ", gc_id)
+		}
+		
 	} else if resp.StatusCode == 429 {
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
