@@ -1,5 +1,6 @@
 package main
 
+//imports
 import (
 	"bytes"
 	"encoding/json"	
@@ -13,7 +14,7 @@ import (
 	"net/http"
 )
 
-
+// structs
 type structs struct {
 	Dcfd  string
 	Sdcfd string
@@ -22,7 +23,7 @@ type structs struct {
 
 
 
-
+// Functions
 func Create_gc(token string) {
 	payload := map[string]string{
 		"recipients": "",
@@ -77,6 +78,15 @@ func Create_gc(token string) {
 }
 
 
+
+func spam_gc() {
+
+}
+
+
+
+
+// Modules
 func Build_cookie() structs {
 	log.SetOutput(ioutil.Discard)
 	req, err := http.Get("https://discord.com")
@@ -100,15 +110,6 @@ func Build_cookie() structs {
 	}
 	return Cookie
 }
-func spam_gc() {
-
-}
-
-func test(token string) {
-	fmt.Println(token)
-}
-
-
 
 
 func DecodeBr(data []byte) ([]byte, error) {
@@ -131,10 +132,17 @@ func readLines() ([]string, error) {
 	return lines, scanner.Err()
 }
 
+func colors() ([]string){
+	blue := ""
+	cyan := ""
+	var clr []string
+	return clr
+}
 
 
 
 
+//main
 func main() {
 	logo := "nigger \n nugger"
 	fmt.Println(logo)
