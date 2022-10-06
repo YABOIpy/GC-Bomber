@@ -341,11 +341,15 @@ func main() {
 		scn.Scan()
 		user := scn.Text()
 		wg.Add(len(lines))
-		for i := 0; i < len(ids); i++ {
-			mth := "PUT"
-			member(lines[i], user, ids[i], mth)
-			mths := "DELETE"
-			member(lines[i], user, ids[i], mths)
+		for true {
+			for i := 0; i < len(ids); i++ {
+				mth := "PUT"
+				member(lines[i], user, ids[i], mth)
+			}
+			for i := 0; i < len(ids); i++ {
+				mth := "DELETE"
+				member(lines[i], user, ids[i], mth)
+			}
 		}
 	} else {
 		fmt.Println("\n[\033[31mERROR\033[39m] Wrong Input")
