@@ -4,16 +4,16 @@ package main
 import (
 	"bufio"
 	"bytes"
-	"encoding/base64"
+	//"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"net/url"
-	"strings"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
+	"strings"
 	"sync"
 	"time"
 
@@ -32,11 +32,6 @@ type structs struct {
 func Create_gc(token string) {
 	payload := map[string]string{
 		"recipients": "",
-	}
-	Client := http.Client{
-		//Transport: &http.Transport{
-			//Proxy: http.ProxyURL(p),
-		//},
 	}
 	xp, _ := json.Marshal(payload)
 	Cookie := Build_cookie()
@@ -78,7 +73,7 @@ func Create_gc(token string) {
 		var ResponseBody structs
 		json.Unmarshal(p, &ResponseBody)
 		gc_id := ResponseBody.ID
-		fmt.Println("(\033[32m+\033[39m) Made GC | [ID]: ", gc_id)
+		fmt.Println("(\033[32m+\033[39m) Made GC "+c+"|"+r+" ["+c+"ID"+r+"]: ", gc_id)
 		f, err := os.OpenFile("gcs.txt", os.O_RDWR|os.O_APPEND, 0660)
 		if err != nil {
 			log.Fatal(err)
@@ -98,19 +93,17 @@ func Create_gc(token string) {
 		var ResponseBody structs
 		json.Unmarshal(body, &ResponseBody)
 		timeout := ResponseBody.Time
-		fmt.Println("(\033[33m/\033[39m) Rate Limmit | [TIME]: ", timeout, "\033[u")
+		fmt.Println("(\033[33m/\033[39m) Rate Limmit "+c+"|"+r+" ["+c+"TIME"+r+"]: ", timeout, "\033[u")
 		time.Sleep(100 *time.Second)
 
-
 	} else {
-		fmt.Print("(\033[31mx\033[39m)[ERROR] : ", resp)
+		fmt.Print("(\033[31mx\033[39m) [\033[31mERROR\033[39m] : ", resp)
 	}
 
 }
 
 
 func member(token string, user_id string, gc_id string, method string) {
-	Client := &http.Client{}
 	Cookie := Build_cookie()
 	Cookies := "__dcfduid=" + Cookie.Dcfd + "; " + "__sdcfduid=" + Cookie.Sdcfd + "; "
 	req, err := http.NewRequest(""+method+"", "https://discord.com/api/v9/channels/"+gc_id+"/recipients/"+user_id+"", nil)
@@ -141,10 +134,10 @@ func member(token string, user_id string, gc_id string, method string) {
 	if resp.StatusCode == 204 {
 		if method == "PUT" {
 			x :="Added  "
-			fmt.Println("(\033[32m+\033[39m) "+x+" [USER]: "+user_id+" To [GC]: ", gc_id)
+			fmt.Println("(\033[32m+\033[39m) "+x+" ["+c+"USER"+r+"]: "+user_id+" To ["+c+"GC"+r+"]: ", gc_id)
 		} else if method == "DELETE" {
 			x := "Removed"
-			fmt.Println("(\033[32m-\033[39m) "+x+" [USER]: "+user_id+" To [GC]: ", gc_id)
+			fmt.Println("(\033[32m-\033[39m) "+x+" ["+c+"USER"+r+"]: "+user_id+" To ["+c+"GC"+r+"]: ", gc_id)
 		}
 		
 	} else if resp.StatusCode == 429 {
@@ -155,24 +148,166 @@ func member(token string, user_id string, gc_id string, method string) {
 		var ResponseBody structs
 		json.Unmarshal(body, &ResponseBody)
 		timeout := ResponseBody.Time
-		fmt.Println("(\033[33m/\033[39m) Rate Limmit | [TIME]: ", timeout)
+		fmt.Println("(\033[33m/\033[39m) Rate Limmit "+c+"|"+r+" ["+c+"TIME"+r+"]: ", timeout)
 
 	} else {
-		fmt.Print("(\033[31mx\033[39m) [ERROR] : ", resp)
+		fmt.Print("(\033[31mx\033[39m) [\033[31mERROR\033[39m] : ", resp)
+	}
+}
+
+func change_pfp(token string, gc_id string, img string) {
+	payload := map[string]string{
+		"icon": "data:image/png;base64," + img,
+	}
+	xp,_ := json.Marshal(payload)
+	Cookie := Build_cookie()
+	Cookies := "__dcfduid=" + Cookie.Dcfd + "; " + "__sdcfduid=" + Cookie.Sdcfd + "; "
+	req, err := http.NewRequest("PATCH", "https://discord.com/api/v9/channels/"+gc_id+"", bytes.NewBuffer(xp))	
+	for x,o := range map[string]string{
+		"accept":               "*/*",
+		"accept-encoding":      "gzip, deflate, br",
+		"accept-language":      "en-US,en-NL;q=0.9,en-GB;q=0.8",
+		"authorization":        token,
+		"content-type": 		"application/json",
+		"cookie":               Cookies,
+		"origin":               "https://discord.com",
+		"referer":              "https://discord.com/channels/@me/",
+		"sec-fetch-dest":       "empty",
+		"sec-fetch-mode":       "cors",
+		"sec-fetch-site":       "same-origin",
+		"user-agent":           "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) discord/1.0.9006 Chrome/91.0.4472.164 Electron/13.6.6 Safari/537.36",
+		"x-context-properties": "eyJsb2NhdGlvbiI6IkFkZCBGcmllbmRzIHRvIERNIn0=",
+		"x-debug-options":      "bugReporterEnabled",
+		"x-discord-locale":     "en-US",
+		"x-super-properties":   "eyJvcyI6IldpbmRvd3MiLCJicm93c2VyIjoiRGlzY29yZCBDbGllbnQiLCJyZWxlYXNlX2NoYW5uZWwiOiJzdGFibGUiLCJjbGllbnRfdmVyc2lvbiI6IjEuMC45MDA2Iiwib3NfdmVyc2lvbiI6IjEwLjAuMjIwMDAiLCJvc19hcmNoIjoieDY0Iiwic3lzdGVtX2xvY2FsZSI6ImVuLVVTIiwiY2xpZW50X2J1aWxkX251bWJlciI6MTUwNzQ4LCJjbGllbnRfZXZlbnRfc291cmNlIjpudWxsfQ==",
+	} {
+		req.Header.Set(x,o)
+	}
+	resp, err := Client.Do(req)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if resp.StatusCode == 200 {
+		fmt.Println("(\033[32m+\033[39m) Changed PFP To ["+c+"GC"+r+"]: ", gc_id)
+	} else if resp.StatusCode == 429 {
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			log.Fatal(err)
+		}
+		var ResponseBody structs
+		json.Unmarshal(body, &ResponseBody)
+		timeout := ResponseBody.Time
+		fmt.Println("(\033[33m/\033[39m) Rate Limmit "+c+"|"+r+" ["+c+"TIME"+r+"]: ", timeout)
+
+	} else {
+		fmt.Print("(\033[31mx\033[39m) [\033[31mERROR\033[39m] : ", resp)
+	}
+
+}
+
+
+func change_name(token string, gc_id string, names string) {
+	payload := map[string]string{
+		"name": names,
+	}
+	xp,_ := json.Marshal(payload)
+	Cookie := Build_cookie()
+	Cookies := "__dcfduid=" + Cookie.Dcfd + "; " + "__sdcfduid=" + Cookie.Sdcfd + "; "
+	req, err := http.NewRequest("PATCH", "https://discord.com/api/v9/channels/"+gc_id+"", bytes.NewBuffer(xp))	
+	for x,o := range map[string]string{
+		"accept":               "*/*",
+		"accept-encoding":      "gzip, deflate, br",
+		"accept-language":      "en-US,en-NL;q=0.9,en-GB;q=0.8",
+		"authorization":        token,
+		"content-type": 		"application/json",
+		"cookie":               Cookies,
+		"origin":               "https://discord.com",
+		"referer":              "https://discord.com/channels/@me/",
+		"sec-fetch-dest":       "empty",
+		"sec-fetch-mode":       "cors",
+		"sec-fetch-site":       "same-origin",
+		"user-agent":           "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) discord/1.0.9006 Chrome/91.0.4472.164 Electron/13.6.6 Safari/537.36",
+		"x-context-properties": "eyJsb2NhdGlvbiI6IkFkZCBGcmllbmRzIHRvIERNIn0=",
+		"x-debug-options":      "bugReporterEnabled",
+		"x-discord-locale":     "en-US",
+		"x-super-properties":   "eyJvcyI6IldpbmRvd3MiLCJicm93c2VyIjoiRGlzY29yZCBDbGllbnQiLCJyZWxlYXNlX2NoYW5uZWwiOiJzdGFibGUiLCJjbGllbnRfdmVyc2lvbiI6IjEuMC45MDA2Iiwib3NfdmVyc2lvbiI6IjEwLjAuMjIwMDAiLCJvc19hcmNoIjoieDY0Iiwic3lzdGVtX2xvY2FsZSI6ImVuLVVTIiwiY2xpZW50X2J1aWxkX251bWJlciI6MTUwNzQ4LCJjbGllbnRfZXZlbnRfc291cmNlIjpudWxsfQ==",
+	} {
+		req.Header.Set(x,o)
+	}
+	resp, err := Client.Do(req)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if resp.StatusCode == 200 {
+		fmt.Println("(\033[32m+\033[39m) Changed  ["+c+"GC"+r+"]: ", gc_id, " | ["+c+"NAME"+r+"]: ", names)
+	} else if resp.StatusCode == 429 {
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			log.Fatal(err)
+		}
+		var ResponseBody structs
+		json.Unmarshal(body, &ResponseBody)
+		timeout := ResponseBody.Time
+		fmt.Println("(\033[33m/\033[39m) Rate Limmit "+c+"|"+r+" ["+c+"TIME"+r+"]: ", timeout)
+
+	} else {
+		fmt.Print("(\033[31mx\033[39m) [\033[31mERROR\033[39m] : ", resp)
 	}
 }
 
 
+func spam_gc(token string, gc_id string, message string,) {
+	payload := map[string]string{
+		"content": "@here | "+message+"",
+	}
+	xp,_ := json.Marshal(payload)
+	Cookie := Build_cookie()
+	Cookies := "__dcfduid=" + Cookie.Dcfd + "; " + "__sdcfduid=" + Cookie.Sdcfd + "; "
+	req, err := http.NewRequest("POST", "https://discordapp.com/api/v9/channels/"+gc_id+"/messages", bytes.NewBuffer(xp))
+	if err != nil {
+		log.Fatal(err)
+	}
+	for x,o := range map[string]string{
+		"accept":               "*/*",
+		"accept-encoding":      "gzip, deflate, br",
+		"accept-language":      "en-US,en-NL;q=0.9,en-GB;q=0.8",
+		"authorization":        token,
+		"content-type": "application/json",
+		"cookie":               Cookies,
+		"origin":               "https://discord.com",
+		"referer":              "https://discord.com/channels/@me/",
+		"sec-fetch-dest":       "empty",
+		"sec-fetch-mode":       "cors",
+		"sec-fetch-site":       "same-origin",
+		"user-agent":           "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) discord/1.0.9006 Chrome/91.0.4472.164 Electron/13.6.6 Safari/537.36",
+		"x-context-properties": "eyJsb2NhdGlvbiI6IkFkZCBGcmllbmRzIHRvIERNIn0=",
+		"x-debug-options":      "bugReporterEnabled",
+		"x-discord-locale":     "en-US",
+		"x-super-properties":   "eyJvcyI6IldpbmRvd3MiLCJicm93c2VyIjoiRGlzY29yZCBDbGllbnQiLCJyZWxlYXNlX2NoYW5uZWwiOiJzdGFibGUiLCJjbGllbnRfdmVyc2lvbiI6IjEuMC45MDA2Iiwib3NfdmVyc2lvbiI6IjEwLjAuMjIwMDAiLCJvc19hcmNoIjoieDY0Iiwic3lzdGVtX2xvY2FsZSI6ImVuLVVTIiwiY2xpZW50X2J1aWxkX251bWJlciI6MTUwNzQ4LCJjbGllbnRfZXZlbnRfc291cmNlIjpudWxsfQ==",
+	} {
+		req.Header.Set(x,o)
+	}
+	resp, err := Client.Do(req)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if resp.StatusCode == 200 {
+		fmt.Println("(\033[32m+\033[39m) Sent Message To ["+c+"GC"+r+"]: ", gc_id)
+	} else if resp.StatusCode == 429 {
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			log.Fatal(err)
+		}
+		var ResponseBody structs
+		json.Unmarshal(body, &ResponseBody)
+		timeout := ResponseBody.Time
+		fmt.Println("(\033[33m/\033[39m) Rate Limmit "+c+"|"+r+" ["+c+"TIME"+r+"]: ", timeout)
 
-func change_name() {
-
+	} else {
+		fmt.Print("(\033[31mx\033[39m) [\033[31mERROR\033[39m] : ", resp)
+	}
+	
 }
-
-
-func spam_gc() {
-
-}
-
 
 
 
@@ -255,19 +390,41 @@ func colors() []string {
 	var clr []string
 	return clr
 }
+func cls() {
+	cmd := exec.Command("cmd", "/c", "cls") 
+	cmd.Stdout = os.Stdout
+	cmd.Run()
+}
 
 
 
 
 
 
+//global vars
+var c = "\033[36m"
+var r = "\033[39m"
+var Client = http.Client{
+	//Transport: &http.Transport{
+		//Proxy: http.ProxyURL(p),
+	//},
+}
 
 //main
 func main() {
-	enclogo := ""
-	logo,_ := base64.StdEncoding.DecodeString(enclogo)
+	cls()
+	logo := c + `
+	 ________ ________      _________________  
+	/  _____/ \_____  \    /  _____/\_   ___ \ 
+       /   \  ___  /   |   \  /   \  ___/    \  \/ 
+       \    \_\  \/    |    \ \    \_\  \     \____
+	\______  /\_______  /  \______  /\______  /
+	       \/         \/          \/        \/
+	`+c+`[`+r+`GO GroupChat Tool`+c+`]`+r+`
+
+	`
 	var wg sync.WaitGroup
-	fmt.Printf("%q\n", logo)
+	fmt.Printf(logo)
 	scn := bufio.NewScanner(os.Stdin)
 	
 
@@ -283,7 +440,8 @@ func main() {
 
 
 	//inputs
-	fmt.Println("	[1] Create GC\n	[2] Add Member\n	[3] Remove Member\n	[4] Remove/Add Member")
+	
+	fmt.Println("["+c+"1"+r+"] Create GC\n	["+c+"2"+r+"] Add Member\n	["+c+"3"+r+"] Remove Member\n	["+c+"4"+r+"] Remove/Add Member\n	["+c+"5"+r+"] Spam GC\n	["+c+"6"+r+"] Change Names\n	["+c+"7"+r+"] GC PFP")
 	fmt.Print("\n\n	[]> ")
 	scn.Scan()
 	choice := scn.Text()
@@ -291,7 +449,7 @@ func main() {
 	
 	//create Groupchat call
 	if choice == "1" {
-		fmt.Println("\n	[1] Single Token\n	[2] Multi Token\n")	
+		fmt.Println("\n	["+c+"1"+r+"] Single Token\n	["+c+"2"+r+"] Multi Token\n ")	
 		fmt.Print("	[]> ")
 		scn.Scan()
 		choice := scn.Text()
@@ -317,30 +475,30 @@ func main() {
 
 		//add member call
 	} else if choice == "2" {
-		fmt.Print("	[USER ID]> ")
+		fmt.Print("	["+c+"USER ID"+r+"]> ")
 		scn.Scan()
 		user := scn.Text()
-		wg.Add(len(lines))
+		wg.Add(len(ids))
 		mth := "PUT"
 		for i := 0; i < len(ids); i++ {
 			member(lines[i], user, ids[i], mth)
 		}
 
 	} else if choice == "3" {
-		fmt.Print("	[USER ID]> ")
+		fmt.Print("	["+c+"USER ID"+r+"]> ")
 		scn.Scan()
 		user := scn.Text()
-		wg.Add(len(lines))
+		wg.Add(len(ids))
 		mth := "DELETE"
 		for i := 0; i < len(ids); i++ {
 			member(lines[i], user, ids[i], mth)
 		}
 
 	} else if choice == "4" {
-		fmt.Print("	[USER ID]> ")
+		fmt.Print("	["+c+"USER ID"+r+"]> ")
 		scn.Scan()
 		user := scn.Text()
-		wg.Add(len(lines))
+		wg.Add(len(ids))
 		for true {
 			for i := 0; i < len(ids); i++ {
 				mth := "PUT"
@@ -351,12 +509,40 @@ func main() {
 				member(lines[i], user, ids[i], mth)
 			}
 		}
+	} else if choice == "5" {
+
+		fmt.Print("	["+c+"MESSAGE"+r+"]> ")
+		scn.Scan()
+		msg := scn.Text()
+		for i := 0; i < len(lines); i++ {
+			spam_gc(lines[i], ids[i], msg)
+		}
+		
+	} else if choice == "6" {
+		fmt.Print("	["+c+"NAME"+r+"]> ")
+		scn.Scan()
+		name := scn.Text()
+		fmt.Print("	["+c+"TOKEN"+r+"]> ")
+		scn.Scan()
+		tok := scn.Text()
+		for i := 0; i < len(ids); i++ {
+			change_name(tok, ids[i], name)
+		}
+	} else if choice == "7" {
+		data, err := os.ReadFile("b64img.txt")
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Print("	["+c+"TOKEN"+r+"]> ")
+		scn.Scan()
+		tok := scn.Text()
+		for i := 0; i < len(ids); i++ {
+			change_pfp(tok, ids[i], string(data))
+		}
 	} else {
 		fmt.Println("\n[\033[31mERROR\033[39m] Wrong Input")
 		time.Sleep(1 *time.Second)
-        cmd := exec.Command("cmd", "/c", "cls") 
-        cmd.Stdout = os.Stdout
-        cmd.Run()
+		cls()
 		main()
 	} 
 
